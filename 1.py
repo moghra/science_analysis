@@ -6,7 +6,7 @@ INF = 1000
 au_n = input()
 au_f = input()
 au_name = au_n + '+' + au_f
-link = 'https://api.crossref.org/works?query.author=' + au_name + '&rows=800'
+link = 'https://api.crossref.org/works?query.author=' + au_name + '&rows=200'
 t = requests.get(link).json()
 wl = t['message']['items']
 
@@ -37,8 +37,8 @@ for w in wl:
             #print (w['author'])
             cur_auths = []
             for a in auths:
-                print (a.keys())
-                if ('family' in a.keys()) and (a['family'] != ):
+                #print (a.keys())
+                if (('family' in a.keys()) and (a['family'] != au_f)):
                     if (co_auth.get(a['family']) == None):
                         co_auth[a['family']] = 1
                         co_auth_num[a['family']] = cnt
@@ -54,17 +54,28 @@ for w in wl:
 co_auth_k = list(co_auth.keys())
 
 labs = []
+used = []
 
-for a1 in range (cnt):
+
+for a1 in range(cnt):
+    used.append(False)
     labs.append([])
-    for a2 in range (cnt):
+    for a2 in range(cnt):
         if a1 != a2:
             if ((co_auth[num_co_auth[a1]] > 3) and (co_auth[num_co_auth[a2]] > 3)
                         and (co_auth_conc[a1][a2] * 5 / 4 > min(co_auth[num_co_auth[a1]], co_auth[num_co_auth[a2]]))):
                 labs[a1].append(a2)
+                print(num_co_auth[a1], ' + ', num_co_auth[a2], ' - conc = ', co_auth_conc[a1][a2])
 
-for a1 in range (j):
-    if (len(labs[a1]) > 0):
+print('summary:', len(labs), "labs")
+i = 0
+for a1 in range(cnt):
+    if ((len(labs[a1]) > 0) and (not used[a1])):
+        used[a1] = True
+        i += 1
+        print('lab #', i)
+        print(num_co_auth[a1], co_auth[num_co_auth[a1]])
         for a_id in labs[a1]:
+            used[a_id] = True
             print (num_co_auth[a_id], co_auth[num_co_auth[a_id]])
         print("///")
